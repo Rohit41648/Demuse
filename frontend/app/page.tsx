@@ -1,12 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { isAllowed, setAllowed, getUserInfo } from "@stellar/freighter-api";
-import { Contract, rpc, scValToNative, nativeToScVal } from "@stellar/stellar-sdk";
-
-const CONTRACT_ID = process.env.NEXT_PUBLIC_CONTRACT_ID || "";
-const RPC_URL = process.env.NEXT_PUBLIC_STELLAR_RPC_URL || "https://soroban-testnet.stellar.org:443";
-const NETWORK_PASSPHRASE = "Test SDF Network ; September 2015";
+import { isAllowed, setAllowed, getAddress } from "@stellar/freighter-api";
 
 export default function Home() {
   const [wallet, setWallet] = useState<string | null>(null);
@@ -15,16 +10,17 @@ export default function Home() {
   const [tipTarget, setTipTarget] = useState("");
   const [tipAmount, setTipAmount] = useState("");
 
-  useEffect(() => {
-    checkConnection();
-  }, []);
-
   const checkConnection = async () => {
     if (await isAllowed()) {
-      const userInfo = await getUserInfo();
-      if (userInfo.publicKey) setWallet(userInfo.publicKey);
+      const userInfo = await getAddress();
+      if (userInfo.address) setWallet(userInfo.address);
     }
   };
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    checkConnection();
+  }, []);
 
   const connectWallet = async () => {
     try {

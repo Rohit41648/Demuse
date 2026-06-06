@@ -1,5 +1,8 @@
 # Demuse
 
+**Deployed Contract:** [CBNGL6LHA7CYBVBWGK7TFFFBXLMWIFR4NZQVP2JBM6N7WQ2LP3TI3OIE](https://stellar.expert/explorer/testnet/contract/CBNGL6LHA7CYBVBWGK7TFFFBXLMWIFR4NZQVP2JBM6N7WQ2LP3TI3OIE)
+
+
 Demuse is a Decentralized Creator Platform on the Stellar Soroban network. It allows creators to register on the platform and fans to tip or support them directly using smart contracts.
 
 ## Deployed Smart Contract (Testnet)

@@ -2,6 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { isAllowed, setAllowed, getAddress } from "@stellar/freighter-api";
+import { Client } from "demuse";
+
+// Make sure to use the generated Demuse client bindings
+// This acts as the actual on-chain integration
+const client = new Client({
+  networkPassphrase: "Test SDF Network ; September 2015",
+  contractId: process.env.NEXT_PUBLIC_CONTRACT_ID || "CBNGL6LHA7CYBVBWGK7TFFFBXLMWIFR4NZQVP2JBM6N7WQ2LP3TI3OIE",
+  rpcUrl: "https://soroban-testnet.stellar.org",
+});
 
 export default function Home() {
   const [wallet, setWallet] = useState<string | null>(null);
@@ -38,13 +47,25 @@ export default function Home() {
     
     setLoading(true);
     try {
-      // In a real implementation we would sign and submit the transaction via freighter
-      // Here we just mock the frontend validation for the strict requirements
-      alert(`Creator ${nameInput} registration initiated! (Transaction signing mocked)`);
+      // Use bindings to hit the Soroban contract directly
+      const tx = await client.registerCreator({
+        creator: wallet,
+        name: nameInput,
+      });
+
+      await tx.signAndSend({
+        signTransaction: async (xdr) => {
+          const { signTransaction } = await import("@stellar/freighter-api");
+          return await signTransaction(xdr, {
+            networkPassphrase: "Test SDF Network ; September 2015",
+          });
+        }
+      });
+      alert(`Creator ${nameInput} registration submitted on-chain successfully!`);
       setNameInput("");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Registration failed");
+      alert("Registration failed: " + (error.message || error));
     }
     setLoading(false);
   };
@@ -55,13 +76,29 @@ export default function Home() {
     
     setLoading(true);
     try {
-      // Real implementation would invoke the contract
-      alert(`Tip of ${tipAmount} sent to ${tipTarget}! (Transaction signing mocked)`);
+      const amountInt = BigInt(tipAmount);
+      
+      const tx = await client.tipCreator({
+        tipper: wallet,
+        creator: tipTarget,
+        amount: amountInt
+      });
+
+      await tx.signAndSend({
+          signTransaction: async (xdr) => {
+            const { signTransaction } = await import("@stellar/freighter-api");
+            return await signTransaction(xdr, {
+              networkPassphrase: "Test SDF Network ; September 2015",
+            });
+          }
+        });
+      
+      alert(`Tip of ${tipAmount} sent to ${tipTarget} on-chain!`);
       setTipTarget("");
       setTipAmount("");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Tipping failed");
+      alert("Tipping failed: " + (error.message || error));
     }
     setLoading(false);
   };
